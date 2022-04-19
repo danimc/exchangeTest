@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Goutte\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
@@ -12,10 +13,12 @@ class ExchangeController extends Controller
 
         $banxico = $this->obtDatosBanxico();
         $fixer = $this->obtDatosFixer();
+        $dof = $this->obtDatosDof();
 
         return response()->json([
-            "banxico"   => $banxico,
-            "fixer"     => $fixer
+           // "banxico"   => $banxico,
+           // "fixer"     => $fixer,
+            "dof"       => $dof
         ], 200);
     }
 
@@ -40,5 +43,31 @@ class ExchangeController extends Controller
         $datos = Http::get("http://data.fixer.io/api/latest?access_key={$KEY}&format=1&symbols=MXN,USD");
 
         return $datos->json();
+    }
+
+    private  function obtDatosDof()
+    {
+        $cliente = new Client();
+
+        $crawler = $cliente->request('GET','http://dof.gob.mx/indicadores_detalle.php?cod_tipo_indicador=158&dfecha=19%2F04%2F2022&hfecha=19%2F04%2F2022');
+        $strData = $crawler->filter('[class="Celda 1"]')->first();
+
+        $valores = explode(" ", $strData->text(),2);
+
+
+
+
+
+
+
+
+
+        echo json_encode($valores);
+
+
+        die();
+
+
+        return json_encode($extracto);
     }
 }
