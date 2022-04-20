@@ -3,26 +3,25 @@
 namespace App\Http\Controllers;
 
 use Goutte\Client;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Http;
 
 class ExchangeController extends Controller
 {
-    public function obtExchange()
+    public function index(): JsonResponse
     {
 
-        $banxico = $this->obtDatosBanxico();
-        $fixer = $this->obtDatosFixer();
-        $dof = $this->obtDatosDof();
+        $banxico = $this->_obtDatosBanxico();
+        $fixer = $this->_obtDatosFixer();
+        $dof = $this->_obtDatosDof();
 
-        $respuesta = array(
+        return response()->json(array(
             "Valores" => array(
                 "Fixer"=>$fixer,
                 "Banxico"=>$banxico,
                 "Diario Oficial de la Federación"=>$dof
             )
-        );
-
-        return response()->json($respuesta,200);
+        ));
     }
 
     /**
@@ -30,7 +29,7 @@ class ExchangeController extends Controller
      *
      * @return array
      */
-    private function obtDatosBanxico()
+    private function _obtDatosBanxico(): array
     {
         $datos = HTTP::withHeaders([
             'Bmx-Token' => $_ENV['BANXICO_TOKEN'],
@@ -46,7 +45,7 @@ class ExchangeController extends Controller
         );
     }
 
-    private function obtDatosFixer()
+    private function _obtDatosFixer(): array
     {
 
         $datos = Http::get("http://data.fixer.io/api/latest?access_key={$_ENV['FIXER_KEY']}&format=1&symbols=MXN,USD");
@@ -72,7 +71,7 @@ class ExchangeController extends Controller
      *
      * @return array[]
      */
-    private function obtDatosDof()
+    private function _obtDatosDof(): array
     {
         $cliente = new Client();
 

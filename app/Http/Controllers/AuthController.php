@@ -5,38 +5,42 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use http\Env\Response;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
+use App\Http\Requests\RegisterRequest;
+
 class AuthController extends Controller
 {
-    public function registrar(Request $request)
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function registrar(RegisterRequest $request): JsonResponse
     {
-       $validacion = $request->validate([
-           'name'   => 'required|string|max:200',
-           'email'  => 'required|string|email|max:255|unique:users',
-           'password'=> 'required|string|min:3'
-       ]);
 
        $nuevoUsuario = User::create([
-           'name'   => $validacion['name'],
-           'email'  => $validacion['email'],
-           'password'=> Hash::make($validacion['password'])
+           'name'   => $request['name'],
+           'email'  => $request['email'],
+           'password'=> Hash::make(request()['password'])
        ]);
 
        $token = $nuevoUsuario->createToken('auth_token')->plainTextToken;
 
        return response()->json([
+           'ok'         => true,
            'token_generado' => $token,
            'tipo_token'     => 'Bearer'
-       ]);
+       ],201);
     }
 
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse
     {
         if(!Auth::attempt($request->only('email','password'))) {
             return response()->json([
+                'ok'    => false,
                 'mensaje'   => 'Usuario o contraseña invalido'
             ], 401);
         }
@@ -45,8 +49,8 @@ class AuthController extends Controller
 
         $token = $usuario->createToken('auth_token')->plainTextToken;
 
-
         return response()->json([
+            'ok'             => 'true',
             'token_generado' => $token,
             'tipo_token'     => 'Bearer'
         ]);

@@ -23,4 +23,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::post('/registrar',[AuthController::class, 'registrar']);
 Route::post('/login',[AuthController::class, 'login']);
 
-Route::get('/exchange',[ExchangeController::class, 'obtExchange'])->middleware('auth:sanctum');
+Route::get('/exchange',[ExchangeController::class, 'index'])->middleware('auth:sanctum');
