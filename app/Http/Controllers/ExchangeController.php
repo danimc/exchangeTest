@@ -66,7 +66,7 @@ class ExchangeController extends Controller
     /**
      * Regresa el tipo de cambio desde el DOF
      *
-     * Realiza un Scraping a la pagina del Diario Oficial de la federacion en busca del tipo de cambio
+     * Realiza un Scraping a la página del Diario Oficial de la federacion en busca del tipo de cambio
      * actual, formatea la información y regresa el array con la respuesta al endpoint
      *
      * @return array[]
@@ -75,7 +75,14 @@ class ExchangeController extends Controller
     {
         $cliente = new Client();
 
-        $crawler = $cliente->request('GET', 'http://dof.gob.mx/indicadores_detalle.php?cod_tipo_indicador=158&dfecha=19%2F04%2F2022&hfecha=19%2F04%2F2022');
+        $urlRequest = "http://dof.gob.mx/indicadores_detalle.php?cod_tipo_indicador=158";
+
+        $fecha = date('Y-m-d');
+        $af = explode('-', $fecha); //array fecha
+        $fechaRequest = "{$af['2']}%2F{$af[1]}%2F{$af[0]}";
+
+
+        $crawler = $cliente->request('GET', "{$urlRequest}&dfecha={$fechaRequest}&hfecha={$fechaRequest}");
         $strData = $crawler->filter('[class="Celda 1"]')->first();
 
         $valores = explode(" ", $strData->text(), 2);

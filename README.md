@@ -7,8 +7,34 @@ una respuesta conjunta de estos.
 
 
 Se desarrollo en Laravel, utilizando Sanctum para la autneticacion por medio de * Tokens *
-y para fines practicos una Bd .Sqlite que se encuentra en la carpeta 
-/ app/database
+y para fines practicos una Bd .Sqlite
+
+### Configuracion del sistema
+
+Instale todas las dependencias necesarias ejecutqando el comando
+
+    composer install
+
+una vez echo esto, cree en la carpeta app/database un fichero llamado database.sqlite, donde se alamacenaran los usuarios
+y tokens generados en el sistema.
+
+configure la ruta de acceso en en .env para la conexón a la BD. modificando los siguientes parametros:
+
+
+    DB_CONNECTION=sqlite
+    DB_HOST=127.0.0.1 // SU HOST
+    DB_PORT=3306        // PUERTO POR DEFECTO
+    DB_DATABASE= <Ruta_absoluta>\database\database.sqlite
+    DB_USERNAME=root
+    DB_PASSWORD=
+
+con la nueeva configuración realizada, ejecute el comando
+
+    php artisan migrate
+
+para configurar la base de datos con las tablas y campos necesarios. 
+
+### API Keys 
 
 las apikeys para consumir los servicios de Banxico y Fixer se deben indicar en el .env con las siguentes claves
 
@@ -55,7 +81,14 @@ y mandar su token como tipo BEARER TOKEN en la autorizacion de la peticion
     
     Bearer Token: <TOKEN>
 
-Ontendra como respuesta la comparacion entre 3 diferentes servicios de tipo de cambio.
+Obtendra como respuesta la comparacion entre 3 diferentes servicios de tipo de cambio.
+
+
+## Pruebas 
+
+Para ejecutar las pruebas unitarias generadas para el sistema, ejecute el comando
+
+    php artisan test
 
 
 
