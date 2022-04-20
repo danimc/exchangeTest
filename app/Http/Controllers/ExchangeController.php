@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Goutte\Client;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class ExchangeController extends Controller
@@ -15,59 +14,76 @@ class ExchangeController extends Controller
         $fixer = $this->obtDatosFixer();
         $dof = $this->obtDatosDof();
 
-        return response()->json([
-           // "banxico"   => $banxico,
-           // "fixer"     => $fixer,
-            "dof"       => $dof
-        ], 200);
+        $respuesta = array(
+            "Valores" => array(
+                "Fixer"=>$fixer,
+                "Banxico"=>$banxico,
+                "Diario Oficial de la Federación"=>$dof
+            )
+        );
+
+        return response()->json($respuesta,200);
     }
 
     /**
-     * Recupera la informacion de Banxico
+     * Recupera la información de Banxico
      *
      * @return array
      */
-    private  function obtDatosBanxico()
+    private function obtDatosBanxico()
     {
         $datos = HTTP::withHeaders([
-            'Bmx-Token' => 'ecc29a8c92a6f342b48683de018b2f154324aa69ad7c041dfcbb0357667ef0f4'
+            'Bmx-Token' => $_ENV['BANXICO_TOKEN'],
         ])->get('https://www.banxico.org.mx/SieAPIRest/service/v1/series/SF43718/datos/oportuno');
+        $datos = $datos->object();
 
-        return $datos->json();
+        $filtro = $datos->bmx->series[0]->datos[0];
+
+        return array(
+                "Ultima Actualización" => $filtro->fecha,
+                "valor" => number_format($filtro->dato, 2)
+
+        );
     }
 
     private function obtDatosFixer()
     {
-        $KEY =  "c0bef04b1e0d3b06a0739e9d88990545";
 
-        $datos = Http::get("http://data.fixer.io/api/latest?access_key={$KEY}&format=1&symbols=MXN,USD");
+        $datos = Http::get("http://data.fixer.io/api/latest?access_key={$_ENV['FIXER_KEY']}&format=1&symbols=MXN,USD");
 
-        return $datos->json();
+        $datos = $datos->object();
+
+        $fecha = $datos->date;
+        $valores = $datos->rates;
+
+        $usd = ($valores->MXN / $valores->USD);
+
+        return array(
+                    "Ultima Actualización" => $fecha,
+                    "valor" => number_format($usd, 2),
+        );
     }
 
-    private  function obtDatosDof()
+    /**
+     * Regresa el tipo de cambio desde el DOF
+     *
+     * Realiza un Scraping a la pagina del Diario Oficial de la federacion en busca del tipo de cambio
+     * actual, formatea la información y regresa el array con la respuesta al endpoint
+     *
+     * @return array[]
+     */
+    private function obtDatosDof()
     {
         $cliente = new Client();
 
-        $crawler = $cliente->request('GET','http://dof.gob.mx/indicadores_detalle.php?cod_tipo_indicador=158&dfecha=19%2F04%2F2022&hfecha=19%2F04%2F2022');
+        $crawler = $cliente->request('GET', 'http://dof.gob.mx/indicadores_detalle.php?cod_tipo_indicador=158&dfecha=19%2F04%2F2022&hfecha=19%2F04%2F2022');
         $strData = $crawler->filter('[class="Celda 1"]')->first();
 
-        $valores = explode(" ", $strData->text(),2);
+        $valores = explode(" ", $strData->text(), 2);
 
-
-
-
-
-
-
-
-
-        echo json_encode($valores);
-
-
-        die();
-
-
-        return json_encode($extracto);
+        return array(
+                    "Ultima Actualización" => $valores[0],
+                    "valor" => number_format($valores[1], 2)
+        );
     }
 }
