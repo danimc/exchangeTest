@@ -121,12 +121,12 @@ class AuthTest extends TestCase
 
     public function test_login_correcto()
     {
-        $nuevoUsuario = array(
+        $usuario = array(
             'email'     => 'agente47@yahoo.com',
             'password'  => '1234567'
         );
 
-        $this->json('POST','api/login')
+        $this->json('POST','api/login', $usuario)
             ->assertOk()
             ->assertJsonFragment(['ok' => 'true']);
     }
